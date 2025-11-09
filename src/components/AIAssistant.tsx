@@ -22,7 +22,7 @@ export default function AIAssistant({ farmerData }: AIAssistantProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "வணக்கம்! Welcome to FarmAssist. How can I help you today?",
+      content: "வணக்கம்! Welcome to FarmAssist. I'm powered by RAG (Retrieval Augmented Generation) with Tamil Nadu agricultural knowledge. How can I help you today?",
       timestamp: new Date()
     }
   ])
@@ -128,7 +128,7 @@ export default function AIAssistant({ farmerData }: AIAssistantProps) {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/rag-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
