@@ -1,4 +1,4 @@
-import { generateEmbedding, generateEmbeddings } from "./embeddings";
+import { generateEmbedding, generateBatchEmbeddings } from "./embeddings";
 import { VectorStore } from "./vectorStore";
 import { knowledgeBase, KnowledgeDocument } from "./knowledgeBase";
 
@@ -22,7 +22,7 @@ export async function initializeVectorStore(): Promise<VectorStore> {
   const texts = knowledgeBase.map((doc) => `${doc.title}\n\n${doc.content}`);
   
   try {
-    const embeddings = await generateEmbeddings(texts);
+    const embeddings = await generateBatchEmbeddings(texts);
     vectorStore.addDocuments(knowledgeBase, embeddings);
     isInitialized = true;
     console.log(`Vector store initialized with ${vectorStore.size()} documents`);
