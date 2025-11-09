@@ -1,21 +1,15 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 /**
- * Generate embeddings for a given text using OpenAI's text-embedding-3-small model
+ * Generate embeddings for a given text using Google Gemini's embedding model
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    const response = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: text,
-      encoding_format: "float",
-    });
-
-    return response.data[0].embedding;
+    const model = genAI.getGenerativeModel({ model: "embedding-001" });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
   } catch (error) {
     console.error("Error generating embedding:", error);
     throw new Error("Failed to generate embedding");
@@ -25,45 +19,16 @@ export async function generateEmbedding(text: string): Promise<number[]> {
 /**
  * Generate embeddings for multiple texts in batch
  */
-export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
+export async function generateBatchEmbeddings(
+  texts: string[]
+): Promise<number[][]> {
   try {
-    const response = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: texts,
-      encoding_format: "float",
-    });
-
-    return response.data.map((item) => item.embedding);
+    const embeddings = await Promise.all(
+      texts.map((text) => generateEmbedding(text))
+    );
+    return embeddings;
   } catch (error) {
-    console.error("Error generating embeddings:", error);
-    throw new Error("Failed to generate embeddings");
+    console.error("Error generating batch embeddings:", error);
+    throw new Error("Failed to generate batch embeddings");
   }
-}
-
-/**
- * Calculate cosine similarity between two vectors
- */
-export function cosineSimilarity(vecA: number[], vecB: number[]): number {
-  if (vecA.length !== vecB.length) {
-    throw new Error("Vectors must have the same length");
-  }
-
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
-  }
-
-  normA = Math.sqrt(normA);
-  normB = Math.sqrt(normB);
-
-  if (normA === 0 || normB === 0) {
-    return 0;
-  }
-
-  return dotProduct / (normA * normB);
 }
